@@ -172,7 +172,7 @@ const translations = {
     plantCapacity: "Plant Capacity (Dry Mass)",
     fuelBulkDensity: "Fuel Bulk Density",
     fuelBulkDensityInfo: "The bulk density of biomass fuels varies significantly depending on material, processing, and moisture content. The following values refer to a moisture content of approx. 20%.",
-    operatingHours: "Operating Hours/Year",
+    operatingHours: "Full-Load-Hours/Year",
     projectLifetime: "Project Lifetime",
     years: "Years",
     electricalPower: "Electrical Rated Power",
@@ -1049,7 +1049,7 @@ const PyrolysisCalculator = () => {
       yPosition += 12;
       
       const capacityLabel = language === 'de' ? 'Kapazität' : 'Capacity';
-      const operatingLabel = language === 'de' ? 'Betriebsstunden' : 'Operating Hours';
+      const operatingLabel = language === 'de' ? 'Volllaststunden' : 'Full-Load-Hours';
       const lifetimeLabel = language === 'de' ? 'Projektlaufzeit' : 'Project Lifetime';
       const discountLabel = language === 'de' ? 'Diskontrate' : 'Discount Rate';
       const efficiencyLabel = language === 'de' ? 'Wärmewirkungsgrad' : 'Thermal Efficiency';
