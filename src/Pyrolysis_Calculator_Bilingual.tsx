@@ -29,7 +29,7 @@ const translations = {
     revenueHeat: "Umsatz Wärme",
     revenueElectricity: "Umsatz Strom",
     revenueBioOil: "Umsatz Bio-Öl",
-    revenueBiochar: "Umsatz Biokohle",
+    revenueBiochar: "Umsatz Biochar",
     revenueCertificates: "Umsatz Zertifikate",
     biochar: "Biochar (Pflanzenkohle)",
     standardProduct: "(Standardprodukt)",
@@ -921,7 +921,7 @@ const PyrolysisCalculator = () => {
       pdf.setTextColor(255, 255, 255);
       pdf.setFontSize(8);
       pdf.setFont('helvetica', 'normal');
-      pdf.text('Umsatz Biokohle', margin + 1, yPosition + 3);
+      pdf.text('Umsatz Biochar', margin + 1, yPosition + 3);
       pdf.setFontSize(12);
       pdf.setFont('helvetica', 'bold');
       const biocharRev = (inputs.plantCapacity * inputs.operatingHours / 1000) * (inputs.biocharYield / 100) * inputs.biocharPrice / 1000;
@@ -1692,6 +1692,11 @@ const PyrolysisCalculator = () => {
                     <input id="biochar-carbon-content" name="biocharCarbonContent" type="range" min="0" max="100" step="1" value={inputs.biocharCarbonContent} onChange={(e) => handleInputChange('biocharCarbonContent', e.target.value)} className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-orange-500" />
                     {expandedInfo['biocharCarbonContent'] && (
                       <div className="mt-2 text-xs text-gray-400 bg-orange-900/20 p-2 rounded">
+                        <p className="mb-2 font-bold text-orange-300">
+                          {language === 'de'
+                            ? 'ℹ️ Dieser Parameter ist rein informativ und fließt nicht in die wirtschaftliche Berechnung ein. Die CO₂-Senkenleistung wird über den LCA-Faktor berechnet.'
+                            : 'ℹ️ This parameter is for informational purposes only and does not affect the economic calculation. CO₂ removal performance is calculated via the LCA factor.'}
+                        </p>
                         <p className="mb-2">
                           {language === 'de'
                             ? 'Der Kohlenstoffanteil (C-Anteil) in der Biokohle variiert stark je nach Ausgangsmaterial. Unterschiedliche Biomassen enthalten unterschiedlich hohe mineralische (Asche-)Anteile. Während der Pyrolyse werden diese mineralischen Bestandteile in der Kohle aufkonzentriert – der organische Anteil wird teils in Gas umgewandelt, die Mineralien bleiben jedoch vollständig in der Kohle. Je höher der Aschegehalt der Biomasse, desto niedriger der C-Anteil in der resultierenden Biokohle.'
@@ -1899,7 +1904,7 @@ const PyrolysisCalculator = () => {
                       <span className="font-bold text-white">{inputs.biocharBulkDensity > 0 ? formatNumber(((inputs.plantCapacity * inputs.operatingHours * inputs.biocharYield) / 100000) / (inputs.biocharBulkDensity / 1000), 0) : '–'} m³/{language === 'de' ? 'a' : 'yr'}</span>
                     </div>
                     <div className="p-2 bg-green-900/20 rounded border border-green-500/30 text-sm">
-                      <span className="text-gray-400">{language === 'de' ? 'Umsatz Biokohle' : 'Biochar Sales'}: </span>
+                      <span className="text-gray-400">{language === 'de' ? 'Umsatz Biochar' : 'Biochar Sales'}: </span>
                       <span className="font-bold text-white">{formatNumber(((inputs.plantCapacity * inputs.operatingHours * inputs.biocharYield) / 100000) * inputs.biocharPrice)} €/{language === 'de' ? 'a' : 'yr'}</span>
                     </div>
                     <div className="p-2 bg-green-900/20 rounded border border-green-500/30 text-sm">
