@@ -2633,7 +2633,22 @@ const PyrolysisCalculator = () => {
                     <div className={`${elecClass} ${baseClass}`}><h3 className={elecText}>{t.revenueElectricity}</h3><p className="text-2xl font-bold text-white">{formatNumber(electricityRevenue)}k €/{language === 'de' ? 'a' : 'y'}</p></div>
                     <div className={`${bioOilClass} ${baseClass}`}><h3 className={bioOilText}>{t.revenueBioOil}</h3><p className="text-2xl font-bold text-white">{formatNumber(bioOilRevenue)}k €/{language === 'de' ? 'a' : 'y'}</p></div>
                     <div className={`${biocharClass} ${baseClass}`}><h3 className={biocharText}>{t.revenueBiochar}</h3><p className="text-2xl font-bold text-white">{formatNumber(biocharRevenue)}k €/{language === 'de' ? 'a' : 'y'}</p></div>
-                    <div className={`${certClass} ${baseClass}`}><h3 className={certText}>{t.revenueCertificates}</h3><p className="text-2xl font-bold text-white">{formatNumber(certificateRevenue)}k €/{language === 'de' ? 'a' : 'y'}</p></div>
+                    <div className={`${certClass} ${baseClass} relative`}>
+                      <div className="flex items-center justify-between">
+                        <h3 className={certText}>{t.revenueCertificates}</h3>
+                        <button onClick={() => toggleInfo('certRevenueInfo')} className="text-emerald-300 hover:text-emerald-200">
+                          <Info className="w-4 h-4" />
+                        </button>
+                      </div>
+                      <p className="text-2xl font-bold text-white">{formatNumber(certificateRevenue)}k €/{language === 'de' ? 'a' : 'y'}</p>
+                      {expandedInfo['certRevenueInfo'] && (
+                        <div className="mt-2 text-xs text-gray-200 bg-black/30 p-2 rounded">
+                          {language === 'de'
+                            ? 'Netto-Umsatz: Ca. 25% des Bruttoumsatzes gehen an dMRV-Dienstleister und CO₂-Händler (Zertifizierung, Verifizierung, Vermarktung).'
+                            : 'Net revenue: Approx. 25% of gross revenue goes to dMRV service providers and CO₂ traders (certification, verification, marketing).'}
+                        </div>
+                      )}
+                    </div>
                   </>
                 );
               })()}
