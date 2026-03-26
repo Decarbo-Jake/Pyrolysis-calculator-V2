@@ -1124,38 +1124,51 @@ const PyrolysisCalculator = () => {
       // Small delay before capturing charts
       await new Promise(resolve => setTimeout(resolve, 200));
       
-      const chartWidth = contentWidth;
-      const chartHeight = 90;
+      // Calculate max chart height so 2 charts fit per page (header=55, footer=15, title overhead=12 per chart, gap=4)
+      const usablePageH = pageHeight - 55 - 15;
+      const maxChartSlotH = (usablePageH - 12) / 2; // each slot: title(6) + chart + gap(8) ≈ 14 overhead
+      const maxChartH = maxChartSlotH - 14;
       
       for (let i = 0; i < chartIds.length; i++) {
         try {
-          if (yPosition + chartHeight + 15 > pageHeight - 15) {
-            pdf.addPage();
-            yPosition = addHeader();
-          }
-          
           const chartElement = document.getElementById(chartIds[i]);
           
           if (chartElement) {
-            pdf.setFontSize(10);
-            pdf.setFont('helvetica', 'bold');
-            pdf.setTextColor(16, 185, 129);
-            const chartTitle = String(chartTitles[i] || '');
-            pdf.text(chartTitle, margin, yPosition);
-            yPosition += 6;
-            
             try {
               const canvas = await html2canvas(chartElement, {
                 backgroundColor: '#111827',
-                scale: 1,
+                scale: 2,
                 logging: false,
                 useCORS: true,
                 allowTaint: true
               });
               
+              // Scale proportionally: fit to contentWidth, then cap height
+              const imgAspect = canvas.width / canvas.height;
+              let drawW = contentWidth;
+              let drawH = contentWidth / imgAspect;
+              if (drawH > maxChartH) {
+                drawH = maxChartH;
+                drawW = drawH * imgAspect;
+              }
+              
+              // Check if we need a new page
+              if (yPosition + drawH + 14 > pageHeight - 15) {
+                pdf.addPage();
+                yPosition = addHeader();
+              }
+              
+              pdf.setFontSize(10);
+              pdf.setFont('helvetica', 'bold');
+              pdf.setTextColor(16, 185, 129);
+              const chartTitle = String(chartTitles[i] || '');
+              pdf.text(chartTitle, margin, yPosition);
+              yPosition += 6;
+              
               const imgData = canvas.toDataURL('image/png');
-              pdf.addImage(imgData, 'PNG', margin, yPosition, chartWidth, chartHeight);
-              yPosition += chartHeight + 8;
+              const drawX = margin + (contentWidth - drawW) / 2;
+              pdf.addImage(imgData, 'PNG', drawX, yPosition, drawW, drawH);
+              yPosition += drawH + 8;
               console.log(`Chart ${i} captured successfully`);
             } catch (canvasError) {
               console.warn(`Could not capture chart ${i}:`, canvasError);
