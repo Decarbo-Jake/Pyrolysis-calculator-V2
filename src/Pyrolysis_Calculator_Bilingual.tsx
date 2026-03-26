@@ -475,7 +475,7 @@ const PyrolysisCalculator = () => {
     annualRevenue += biocharSalesRevenue;
     
     // CO₂ Certificate Revenue
-    const annualCO2Removal = biocharProduction * (inputs.biocharCarbonContent / 100);
+    const annualCO2Removal = biocharProduction * inputs.lcaFactor;
     const certificateRevenue = annualCO2Removal * inputs.co2RemovalPrice;
     annualRevenue += certificateRevenue;
     
@@ -608,8 +608,8 @@ const PyrolysisCalculator = () => {
       const elecRev = products.electricity ? Math.max(0, (elecProductionKWh - inputs.electricalPower * inputs.operatingHours) * inputs.electricityPrice / 1000) : 0;
       const bioOilRev = products.bioOil ? ((inputs.plantCapacity * inputs.operatingHours / 1000) * (inputs.bioOilYield / 100) * inputs.bioOilPrice) : 0;
       const biocharRev = (inputs.plantCapacity * inputs.operatingHours / 1000) * (inputs.biocharYield / 100) * inputs.biocharPrice / 1000;
-      const certRev = ((inputs.plantCapacity * inputs.operatingHours / 1000) * (inputs.biocharYield / 100) * (inputs.biocharCarbonContent / 100) * inputs.co2RemovalPrice) / 1000;
-      const annualCO2 = (inputs.plantCapacity * inputs.operatingHours / 1000) * (inputs.biocharYield / 100) * (inputs.biocharCarbonContent / 100);
+      const certRev = ((inputs.plantCapacity * inputs.operatingHours / 1000) * (inputs.biocharYield / 100) * inputs.lcaFactor * inputs.co2RemovalPrice) / 1000;
+      const annualCO2 = (inputs.plantCapacity * inputs.operatingHours / 1000) * (inputs.biocharYield / 100) * inputs.lcaFactor;
       const totalCO2 = annualCO2 * inputs.projectLifetime;
       
       const templateParams = {
@@ -936,7 +936,7 @@ const PyrolysisCalculator = () => {
       pdf.text('Umsatz Zertifikate', margin + (contentWidth - 4) / 3 + 3, yPosition + 3);
       pdf.setFontSize(12);
       pdf.setFont('helvetica', 'bold');
-      const certRev = ((inputs.plantCapacity * inputs.operatingHours / 1000) * (inputs.biocharYield / 100) * (inputs.biocharCarbonContent / 100) * inputs.co2RemovalPrice) / 1000;
+      const certRev = ((inputs.plantCapacity * inputs.operatingHours / 1000) * (inputs.biocharYield / 100) * inputs.lcaFactor * inputs.co2RemovalPrice) / 1000;
       pdf.text(`${formatNumber(certRev)}k €/a`, margin + (contentWidth - 4) / 3 + 3, yPosition + 10);
       
       yPosition += 16;
@@ -956,7 +956,7 @@ const PyrolysisCalculator = () => {
       pdf.text(co2Title, margin + 2, yPosition + 5);
       yPosition += 10;
       
-      const annualCO2 = (inputs.plantCapacity * inputs.operatingHours / 1000) * (inputs.biocharYield / 100) * (inputs.biocharCarbonContent / 100);
+      const annualCO2 = (inputs.plantCapacity * inputs.operatingHours / 1000) * (inputs.biocharYield / 100) * inputs.lcaFactor;
       const totalCO2 = annualCO2 * inputs.projectLifetime;
       
       // Annual CO2 Box (Green)
@@ -1899,16 +1899,16 @@ const PyrolysisCalculator = () => {
                       <span className="font-bold text-white">{inputs.biocharBulkDensity > 0 ? formatNumber(((inputs.plantCapacity * inputs.operatingHours * inputs.biocharYield) / 100000) / (inputs.biocharBulkDensity / 1000), 0) : '–'} m³/{language === 'de' ? 'a' : 'yr'}</span>
                     </div>
                     <div className="p-2 bg-green-900/20 rounded border border-green-500/30 text-sm">
-                      <span className="text-gray-400">{language === 'de' ? 'Umsatz' : 'Sales'}: </span>
+                      <span className="text-gray-400">{language === 'de' ? 'Umsatz Biokohle' : 'Biochar Sales'}: </span>
                       <span className="font-bold text-white">{formatNumber(((inputs.plantCapacity * inputs.operatingHours * inputs.biocharYield) / 100000) * inputs.biocharPrice)} €/{language === 'de' ? 'a' : 'yr'}</span>
                     </div>
                     <div className="p-2 bg-green-900/20 rounded border border-green-500/30 text-sm">
                       <span className="text-gray-400">CO₂: </span>
-                      <span className="font-bold text-white">{formatNumber(((inputs.plantCapacity * inputs.operatingHours * inputs.biocharYield) / 100000) * (inputs.biocharCarbonContent / 100), 1)} t/{language === 'de' ? 'a' : 'yr'}</span>
+                      <span className="font-bold text-white">{formatNumber(((inputs.plantCapacity * inputs.operatingHours * inputs.biocharYield) / 100000) * inputs.lcaFactor, 1)} t/{language === 'de' ? 'a' : 'yr'}</span>
                     </div>
                     <div className="p-2 bg-green-900/20 rounded border border-green-500/30 text-sm">
                       <span className="text-gray-400">{t.certificateRevenue}: </span>
-                      <span className="font-bold text-white">{formatNumber(((inputs.plantCapacity * inputs.operatingHours * inputs.biocharYield) / 100000) * (inputs.biocharCarbonContent / 100) * inputs.co2RemovalPrice)} €/{language === 'de' ? 'a' : 'yr'}</span>
+                      <span className="font-bold text-white">{formatNumber(((inputs.plantCapacity * inputs.operatingHours * inputs.biocharYield) / 100000) * inputs.lcaFactor * inputs.co2RemovalPrice)} €/{language === 'de' ? 'a' : 'yr'}</span>
                     </div>
                   </div>
                 </div>
