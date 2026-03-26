@@ -1422,7 +1422,10 @@ const PyrolysisCalculator = () => {
                   <label htmlFor="plant-capacity" className="block text-sm font-medium text-blue-300 mb-2">
                     {t.plantCapacity}: <span className="font-bold text-white">{formatNumber(inputs.plantCapacity)} kg/h</span>
                   </label>
-                  <input id="plant-capacity" name="plantCapacity" type="range" min="200" max="20000" step="50" value={inputs.plantCapacity} onChange={(e) => handleInputChange('plantCapacity', e.target.value)} className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-500" />
+                  <div className="flex items-center gap-3">
+                    <input id="plant-capacity" name="plantCapacity" type="range" min="200" max="20000" step="50" value={inputs.plantCapacity} onChange={(e) => handleInputChange('plantCapacity', e.target.value)} className="flex-1 h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-500" />
+                    <input type="number" min="200" max="20000" step="50" value={inputs.plantCapacity} onChange={(e) => handleInputChange('plantCapacity', e.target.value)} className="w-28 px-2 py-1 text-sm text-white bg-gray-700 border border-blue-500/50 rounded-md text-right focus:outline-none focus:border-blue-400" />
+                  </div>
                 </div>
                 <div>
                   <div className="flex items-center justify-between">
@@ -1547,7 +1550,10 @@ const PyrolysisCalculator = () => {
                   <label htmlFor="initial-investment" className="block text-sm font-medium text-orange-300 mb-2">
                     {t.totalInvestment}: <span className="font-bold text-white">{formatNumber(inputs.initialInvestment)} €</span>
                   </label>
-                  <input id="initial-investment" name="initialInvestment" type="range" min="100000" max="20000000" step="10000" value={inputs.initialInvestment} onChange={(e) => handleInputChange('initialInvestment', e.target.value)} className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-orange-500" />
+                  <div className="flex items-center gap-3">
+                    <input id="initial-investment" name="initialInvestment" type="range" min="100000" max="20000000" step="10000" value={inputs.initialInvestment} onChange={(e) => handleInputChange('initialInvestment', e.target.value)} className="flex-1 h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-orange-500" />
+                    <input type="number" min="100000" max="20000000" step="10000" value={inputs.initialInvestment} onChange={(e) => handleInputChange('initialInvestment', e.target.value)} className="w-36 px-2 py-1 text-sm text-white bg-gray-700 border border-orange-500/50 rounded-md text-right focus:outline-none focus:border-orange-400" />
+                  </div>
                 </div>
                 <div>
                   <label htmlFor="feedstock-cost" className="block text-sm font-medium text-orange-300 mb-2">
