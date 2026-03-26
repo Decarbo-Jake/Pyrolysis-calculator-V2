@@ -731,38 +731,44 @@ const PyrolysisCalculator = () => {
       const contentWidth = pageWidth - 2 * margin;
       let yPosition = margin;
       
-      // Header function with logo only (no text, maintains aspect ratio)
-      const addHeader = () => {
-        pdf.setFillColor(17, 24, 39);
-        pdf.rect(0, 0, pageWidth, 50, 'F');
-        
-        // Add logo image - load and convert to data URL with correct aspect ratio
+      // Pre-load logo as data URL synchronously
+      let logoDataUrl: string | null = null;
+      let logoAspectRatio = 1;
+      try {
         const logoImg = new Image();
         logoImg.crossOrigin = 'anonymous';
-        logoImg.onload = () => {
-          try {
+        await new Promise<void>((resolve) => {
+          logoImg.onload = () => {
             const canvas = document.createElement('canvas');
             canvas.width = logoImg.width;
             canvas.height = logoImg.height;
             const ctx = canvas.getContext('2d');
             if (ctx) {
               ctx.drawImage(logoImg, 0, 0);
-              const imgData = canvas.toDataURL('image/png');
-              // Logo dimensions: 40mm height, width calculated to maintain aspect ratio
-              const logoHeight = 40;
-              const logoWidth = (logoImg.width / logoImg.height) * logoHeight;
-              const logoX = (pageWidth - logoWidth) / 2; // Center horizontally
-              const logoY = 5; // Top position
-              pdf.addImage(imgData, 'PNG', logoX, logoY, logoWidth, logoHeight);
+              logoDataUrl = canvas.toDataURL('image/png');
+              logoAspectRatio = logoImg.width / logoImg.height;
             }
-          } catch (err) {
-            console.warn('Logo could not be added to PDF:', err);
-          }
-        };
-        logoImg.onerror = () => {
-          console.warn('Logo could not be loaded');
-        };
-        logoImg.src = decarboLogo;
+            resolve();
+          };
+          logoImg.onerror = () => resolve();
+          logoImg.src = decarboLogo;
+        });
+      } catch (err) {
+        console.warn('Logo pre-load failed:', err);
+      }
+      
+      // Header function with logo (1/3 page width, centered)
+      const addHeader = () => {
+        pdf.setFillColor(17, 24, 39);
+        pdf.rect(0, 0, pageWidth, 50, 'F');
+        
+        if (logoDataUrl) {
+          const logoWidth = pageWidth / 3;
+          const logoHeight = logoWidth / logoAspectRatio;
+          const logoX = (pageWidth - logoWidth) / 2;
+          const logoY = (50 - logoHeight) / 2;
+          pdf.addImage(logoDataUrl, 'PNG', logoX, Math.max(logoY, 2), logoWidth, Math.min(logoHeight, 46));
+        }
         
         pdf.setDrawColor(34, 197, 94);
         pdf.setLineWidth(0.5);
@@ -1110,15 +1116,16 @@ const PyrolysisCalculator = () => {
       const cumulativeTitle = language === 'de' ? 'Kumulativer Cash Flow' : 'Cumulative Cash Flow';
       const revenueTitle = language === 'de' ? 'Jährliche Einnahmen vs. Kosten' : 'Annual Revenue vs. Costs';
       const pieTitle = language === 'de' ? 'Umsatzverteilung' : 'Revenue Distribution';
+      const sankeyTitle = language === 'de' ? 'Sankey-Diagramm – Energiefluss' : 'Sankey Diagram – Energy Flow';
       
-      const chartIds = ['cumulative-chart', 'revenue-chart', 'pie-chart'];
-      const chartTitles = [cumulativeTitle, revenueTitle, pieTitle];
+      const chartIds = ['cumulative-chart', 'revenue-chart', 'pie-chart', 'sankey-chart'];
+      const chartTitles = [cumulativeTitle, revenueTitle, pieTitle, sankeyTitle];
       
       // Small delay before capturing charts
       await new Promise(resolve => setTimeout(resolve, 200));
       
-      const chartWidth = 60;
-      const chartHeight = 45;
+      const chartWidth = contentWidth;
+      const chartHeight = 90;
       
       for (let i = 0; i < chartIds.length; i++) {
         try {
@@ -2354,7 +2361,7 @@ const PyrolysisCalculator = () => {
                 const nodeW = 18;
 
                 return (
-                  <div className="w-full mt-4 p-4 bg-gray-800/80 rounded-lg border border-gray-600/40">
+                  <div id="sankey-chart" className="w-full mt-4 p-4 bg-gray-800/80 rounded-lg border border-gray-600/40">
                     <h4 className="text-lg font-bold text-gray-300 mb-3">
                       {language === 'de' ? '🔀 Sankey-Diagramm – Energiefluss' : '🔀 Sankey Diagram – Energy Flow'}
                     </h4>
