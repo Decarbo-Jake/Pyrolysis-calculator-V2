@@ -1952,7 +1952,7 @@ const PyrolysisCalculator = () => {
                       </p>
                     )}
                   </div>
-                  {/* KPI Summary */
+                  {/* KPI Summary */}
                   <div className="space-y-2 pt-1">
                     <div className="p-2 bg-green-900/20 rounded border border-green-500/30 text-sm">
                       <span className="text-gray-400">{t.biocharProduction}: </span>
