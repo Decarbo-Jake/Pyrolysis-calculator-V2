@@ -77,6 +77,8 @@ const translations = {
     lcaFactorInfo: "Der LCA-Faktor beschreibt die tatsächliche CO₂-Senkenleistung der produzierten Biokohle unter Berücksichtigung aller Prozessemissionen. Was wird berücksichtigt? Biomasse-Logistik (Transport zur Anlage), Vorbehandlung und Trocknung, Energieverbrauch der Pyrolyseanlage, Nachbehandlung und Konfektionierung, Transport und Ausbringung der Biokohle. Berechnung: Physikalisch entspricht 1 kg gebundener Kohlenstoff in der Biokohle ca. 3,67 kg CO₂. Von diesem theoretischen Maximum werden die Lebenszyklusemissionen abgezogen, um die netto CO₂-Senkenleistung zu ermitteln. Typische Werte: Optimierte Anlagen: 2,5 - 3,0 tCO₂/t Biokohle; Durchschnittliche Anlagen: 2,0 - 2,5 tCO₂/t Biokohle; Konservative Kalkulation: 2,4 tCO₂/t Biokohle (Standardwert). Wichtig: Der finale LCA-Faktor ist projektspezifisch und erfordert eine detaillierte Lebenszyklusanalyse nach anerkannten Standards.",
     co2RemovalPrice: "CO₂ Removal Credit Preis",
     co2RemovalPriceInfo: "Der CO₂ Removal Credit Preis beschreibt den Marktwert für gehandelte CO₂-Entnahmezertifikate (Carbon Dioxide Removal, CDR). Die angegebenen Preise orientieren sich an aktuellen Marktdurchschnitten. Den tagesaktuellen Durchschnittspreis für gehandelte CO₂-Entnahmezertifikate finden Sie auf der Website www.cdr.fyi. Es ist wichtig zu beachten, dass auch höhere Preise erzielbar sind. Diese hängen stark von der Vermarktungsstrategie des Gesamtprojekts ab, einschließlich: Zertifizierungsstandards und deren Anerkennung, Transparenz und Nachverfolgung (Tracking), Kundengruppe und deren Bereitschaft zu Premium-Zahlung, und Langfristigkeit der Abnahmeverträge. Eine professionelle Vermarktungsstrategie kann daher erheblich zu besseren Preisen beitragen.",
+    certificateFeeRate: "Handels- & dMRV-Kosten",
+    certificateFeeRateInfo: "Kostenanteil, der vom Brutto-Zertifikatspreis für Handelsplattformgebühren und dMRV-Kosten (digitale Messung, Berichterstattung & Verifizierung) abgezogen wird. Typische Handelsplattformen berechnen 20–30%. Bei direkten Abnahmeverträgen können die Gebühren niedriger ausfallen. Der angezeigte Zertifikatserlös ist bereits um diesen Kostenanteil bereinigt.",
     annualRevenues: "Jährliche Erträge",
     biocharSalesRevenue: "Erträge aus Biochar Verkauf",
     co2CertificateRevenue: "Erträge aus CO₂ Entnahme Zertifikaten",
@@ -205,6 +207,8 @@ const translations = {
     lcaFactorInfo: "The LCA factor describes the actual CO₂ removal performance of the produced biochar considering all process emissions. What is considered? Biomass logistics (transport to facility), pre-treatment and drying, energy consumption of the pyrolysis plant, post-treatment and packaging, transport and application of biochar. Calculation: Physically, 1 kg of bound carbon in biochar corresponds to approximately 3.67 kg CO₂. From this theoretical maximum, lifecycle emissions are subtracted to determine net CO₂ removal performance. Typical values: Optimized plants: 2.5 - 3.0 tCO₂/t biochar; Average plants: 2.0 - 2.5 tCO₂/t biochar; Conservative calculation: 2.4 tCO₂/t biochar (standard value). Important: The final LCA factor is project-specific and requires detailed lifecycle assessment according to recognized standards.",
     co2RemovalPrice: "CO₂ Removal Credit Price",
     co2RemovalPriceInfo: "The CO₂ Removal Credit Price describes the market value for traded CO₂ removal certificates (Carbon Dioxide Removal, CDR). The indicated prices are based on current market averages. You can find current average prices for traded CO₂ removal certificates on the website www.cdr.fyi. It is important to note that higher prices are achievable. These depend largely on the marketing strategy of the overall project, including: certification standards and their recognition, transparency and tracking, customer segment and willingness to pay premiums, and long-term offtake agreements. A professional marketing strategy can therefore contribute significantly to better prices.",
+    certificateFeeRate: "Trading & dMRV Fees",
+    certificateFeeRateInfo: "Cost share deducted from the gross certificate price for trading platform commissions and dMRV (digital Measurement, Reporting & Verification) fees. Typical trading platforms charge 20–30%. Direct offtake agreements may have lower fees. All displayed certificate revenues already reflect this deduction.",
     annualRevenues: "Annual Revenues",
     biocharSalesRevenue: "Revenue from Biochar Sales",
     co2CertificateRevenue: "Revenue from CO₂ Removal Certificates",
@@ -372,6 +376,7 @@ const PyrolysisCalculator = () => {
     biocharPrice: 300,
     lcaFactor: 2.4,
     co2RemovalPrice: 100,
+    certificateFeeRate: 25,   // % deducted for trading + dMRV fees
     heatYield: 40,
     heatPrice: 0.08,
     heatInvestment: 50000,
@@ -459,7 +464,7 @@ const PyrolysisCalculator = () => {
   };
 
   const calculateNPV = () => {
-    const { plantCapacity, operatingHours, projectLifetime, discountRate, initialInvestment, feedstockCost, laborCost, maintenanceCost, biocharYield, biocharPrice, heatYield, heatPrice, heatInvestment, electricityYield, electricityPrice, electricityInvestment, bioOilYield, bioOilPrice, bioOilInvestment } = inputs;
+    const { plantCapacity, operatingHours, projectLifetime, discountRate, initialInvestment, feedstockCost, laborCost, maintenanceCost, biocharYield, biocharPrice, heatYield, heatPrice, heatInvestment, electricityYield, electricityPrice, electricityInvestment, bioOilYield, bioOilPrice, bioOilInvestment, certificateFeeRate } = inputs;
     
     const annualFeedstock = (plantCapacity * operatingHours) / 1000;
     
@@ -475,8 +480,11 @@ const PyrolysisCalculator = () => {
     annualRevenue += biocharSalesRevenue;
     
     // CO₂ Certificate Revenue
-    const annualCO2Removal = biocharProduction * inputs.lcaFactor;
-    const certificateRevenue = annualCO2Removal * inputs.co2RemovalPrice;
+    const annualCO2Removal = biocharProduction * (inputs.biocharCarbonContent / 100);
+    const certificateRevenue =
+      annualCO2Removal
+      * inputs.co2RemovalPrice
+      * (1 - certificateFeeRate / 100);
     annualRevenue += certificateRevenue;
     
     // Heat Revenue — Thermische Nennleistung × Volllaststunden × Anteil verkaufter Wärme
@@ -608,8 +616,8 @@ const PyrolysisCalculator = () => {
       const elecRev = products.electricity ? Math.max(0, (elecProductionKWh - inputs.electricalPower * inputs.operatingHours) * inputs.electricityPrice / 1000) : 0;
       const bioOilRev = products.bioOil ? ((inputs.plantCapacity * inputs.operatingHours / 1000) * (inputs.bioOilYield / 100) * inputs.bioOilPrice) : 0;
       const biocharRev = (inputs.plantCapacity * inputs.operatingHours / 1000) * (inputs.biocharYield / 100) * inputs.biocharPrice / 1000;
-      const certRev = ((inputs.plantCapacity * inputs.operatingHours / 1000) * (inputs.biocharYield / 100) * inputs.lcaFactor * inputs.co2RemovalPrice) / 1000;
-      const annualCO2 = (inputs.plantCapacity * inputs.operatingHours / 1000) * (inputs.biocharYield / 100) * inputs.lcaFactor;
+      const certRev = ((inputs.plantCapacity * inputs.operatingHours / 1000) * (inputs.biocharYield / 100) * (inputs.biocharCarbonContent / 100) * inputs.co2RemovalPrice * (1 - inputs.certificateFeeRate / 100)) / 1000;
+      const annualCO2 = (inputs.plantCapacity * inputs.operatingHours / 1000) * (inputs.biocharYield / 100) * (inputs.biocharCarbonContent / 100);
       const totalCO2 = annualCO2 * inputs.projectLifetime;
       
       const templateParams = {
@@ -659,6 +667,7 @@ const PyrolysisCalculator = () => {
         lca_factor: inputs.lcaFactor,
         biochar_carbon_content: inputs.biocharCarbonContent,
         co2_removal_price: formatNumber(inputs.co2RemovalPrice),
+        certificate_fee_rate: inputs.certificateFeeRate,
         
         // Wirtschaftliche KPIs
         npv: formatNumber(results.npv || 0),
@@ -942,7 +951,7 @@ const PyrolysisCalculator = () => {
       pdf.text('Umsatz Zertifikate', margin + (contentWidth - 4) / 3 + 3, yPosition + 3);
       pdf.setFontSize(12);
       pdf.setFont('helvetica', 'bold');
-      const certRev = ((inputs.plantCapacity * inputs.operatingHours / 1000) * (inputs.biocharYield / 100) * inputs.lcaFactor * inputs.co2RemovalPrice) / 1000;
+      const certRev = ((inputs.plantCapacity * inputs.operatingHours / 1000) * (inputs.biocharYield / 100) * (inputs.biocharCarbonContent / 100) * inputs.co2RemovalPrice * (1 - inputs.certificateFeeRate / 100)) / 1000;
       pdf.text(`${formatNumber(certRev)}k €/a`, margin + (contentWidth - 4) / 3 + 3, yPosition + 10);
       
       yPosition += 16;
@@ -1913,7 +1922,37 @@ const PyrolysisCalculator = () => {
                       </div>
                     )}
                   </div>
-                  {/* KPI Summary */}
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <label className="block text-sm font-medium text-green-300 mb-1">
+                        {t.certificateFeeRate}:{" "}
+                        <span className="font-bold text-white">{inputs.certificateFeeRate}%</span>
+                      </label>
+                      <button
+                        onClick={() => toggleInfo('certificateFeeRate')}
+                        className="text-green-400 hover:text-green-300 ml-1"
+                      >
+                        <Info className="w-5 h-5" />
+                      </button>
+                    </div>
+                    <input
+                      id="certificate-fee-rate"
+                      name="certificateFeeRate"
+                      type="range"
+                      min="0"
+                      max="50"
+                      step="1"
+                      value={inputs.certificateFeeRate}
+                      onChange={(e) => handleInputChange('certificateFeeRate', e.target.value)}
+                      className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-green-500"
+                    />
+                    {expandedInfo['certificateFeeRate'] && (
+                      <p className="mt-1 text-xs text-gray-400 bg-green-900/20 p-2 rounded">
+                        {t.certificateFeeRateInfo}
+                      </p>
+                    )}
+                  </div>
+                  {/* KPI Summary */
                   <div className="space-y-2 pt-1">
                     <div className="p-2 bg-green-900/20 rounded border border-green-500/30 text-sm">
                       <span className="text-gray-400">{t.biocharProduction}: </span>
@@ -1933,7 +1972,7 @@ const PyrolysisCalculator = () => {
                     </div>
                     <div className="p-2 bg-green-900/20 rounded border border-green-500/30 text-sm">
                       <span className="text-gray-400">{t.certificateRevenue}: </span>
-                      <span className="font-bold text-white">{formatNumber(((inputs.plantCapacity * inputs.operatingHours * inputs.biocharYield) / 100000) * inputs.lcaFactor * inputs.co2RemovalPrice)} €/{language === 'de' ? 'a' : 'yr'}</span>
+                      <span className="font-bold text-white">{formatNumber(((inputs.plantCapacity * inputs.operatingHours * inputs.biocharYield) / 100000) * (inputs.biocharCarbonContent / 100) * inputs.co2RemovalPrice * (1 - inputs.certificateFeeRate / 100))} €/{language === 'de' ? 'a' : 'yr'}</span>
                     </div>
                   </div>
                 </div>
@@ -2612,7 +2651,12 @@ const PyrolysisCalculator = () => {
                 const electricityRevenue = products.electricity ? Math.max(0, (elecProd - elecConsumption) * inputs.electricityPrice / 1000) : 0;
                 const bioOilRevenue = products.bioOil ? (inputs.plantCapacity * inputs.operatingHours / 1000) * (inputs.bioOilYield / 100) * inputs.bioOilPrice / 1000 : 0;
                 const biocharRevenue = ((inputs.plantCapacity * inputs.operatingHours / 1000) * (inputs.biocharYield / 100) * inputs.biocharPrice) / 1000;
-                const certificateRevenue = ((inputs.plantCapacity * inputs.operatingHours / 1000) * (inputs.biocharYield / 100) * inputs.lcaFactor * inputs.co2RemovalPrice * 0.75) / 1000;
+                const certificateRevenue =
+                  ((inputs.plantCapacity * inputs.operatingHours / 1000)
+                  * (inputs.biocharYield / 100)
+                  * (inputs.biocharCarbonContent / 100)
+                  * inputs.co2RemovalPrice
+                  * (1 - inputs.certificateFeeRate / 100)) / 1000;
                 
                 const baseClass = 'p-4 rounded-lg shadow-lg';
                 const heatClass = heatRevenue === 0 ? 'bg-gradient-to-br from-gray-600 to-gray-700 border border-gray-500' : 'bg-gradient-to-br from-cyan-600 to-cyan-700 border border-cyan-500';
@@ -2803,7 +2847,11 @@ const PyrolysisCalculator = () => {
                       const annualFeedstock = (inputs.plantCapacity * inputs.operatingHours) / 1000;
                       const biocharProduction = annualFeedstock * (inputs.biocharYield / 100);
                       const biocharSales = biocharProduction * inputs.biocharPrice / 1000;
-                      const co2Certificates = biocharProduction * inputs.lcaFactor * inputs.co2RemovalPrice / 1000;
+                      const co2Certificates =
+                        biocharProduction
+                        * (inputs.biocharCarbonContent / 100)
+                        * inputs.co2RemovalPrice
+                        * (1 - inputs.certificateFeeRate / 100) / 1000;
                       let heatSales = 0;
                       if (products.heat) {
                         heatSales = (thermalRatedPowerKW * (inputs.heatYield / 100) * inputs.operatingHours * inputs.heatPrice) / 1000;
