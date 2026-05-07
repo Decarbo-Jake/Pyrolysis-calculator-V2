@@ -93,7 +93,6 @@ const translations = {
     electricityProduction: "Stromproduktion",
     electricitySalesRevenue: "Umsatz Stromverkauf",
     electricityPrice: "Strompreis (€/kWh)",
-    additionalInvestment: "Zusätzliche Investition (€)",
     bioOilYield: "Bio-Öl Ausbeute (% vom Rohstoff)",
     bioOilPrice: "Bio-Öl Preis (€/t)",
     bioOilHeatingValue: "Heizwert Pyrolyseöl (MJ/kg)",
@@ -225,7 +224,6 @@ const translations = {
     electricitySurplus: "Electricity Surplus",
     electricityPrice: "Electricity Price (€/kWh)",
     electricitySalePriceLabel: "Electricity Sale Price",
-    additionalInvestment: "Additional Investment (€)",
     bioOilYield: "Bio-Oil Yield (% of feedstock)",
     bioOilPrice: "Bio-Oil Price (€/t)",
     bioOilHeatingValue: "Pyrolysis Oil Heating Value (MJ/kg)",
@@ -379,15 +377,12 @@ const PyrolysisCalculator = () => {
     certificateFeeRate: 25,   // % deducted for trading + dMRV fees
     heatYield: 40,
     heatPrice: 0.08,
-    heatInvestment: 50000,
     electricityYield: 18,
     electricityPrice: 0.15,
-    electricityInvestment: 500000,
     usableResidualHeat: 50,
     bioOilYield: 20,
     bioOilPrice: 400,
-    bioOilHeatingValue: 22,
-    bioOilInvestment: 1000000
+    bioOilHeatingValue: 22
   });
 
   const [results, setResults] = useState({
@@ -464,13 +459,11 @@ const PyrolysisCalculator = () => {
   };
 
   const calculateNPV = () => {
-    const { plantCapacity, operatingHours, projectLifetime, discountRate, initialInvestment, feedstockCost, laborCost, maintenanceCost, biocharYield, biocharPrice, heatYield, heatPrice, heatInvestment, electricityYield, electricityPrice, electricityInvestment, bioOilYield, bioOilPrice, bioOilInvestment, certificateFeeRate } = inputs;
+    const { plantCapacity, operatingHours, projectLifetime, discountRate, initialInvestment, feedstockCost, laborCost, maintenanceCost, biocharYield, biocharPrice, heatYield, heatPrice, electricityYield, electricityPrice, bioOilYield, bioOilPrice, certificateFeeRate } = inputs;
     
     const annualFeedstock = (plantCapacity * operatingHours) / 1000;
     
-    let totalInvestment = initialInvestment;
-    if (products.electricity) totalInvestment += electricityInvestment;
-    if (products.bioOil) totalInvestment += bioOilInvestment;
+    const totalInvestment = initialInvestment;
     
     let annualRevenue = 0;
     
@@ -582,12 +575,9 @@ const PyrolysisCalculator = () => {
 
   // Automatisch Wartungskosten an 2.5% der Gesamtinvestition anpassen
   useEffect(() => {
-    let totalInvestment = inputs.initialInvestment;
-    if (products.electricity) totalInvestment += inputs.electricityInvestment;
-    if (products.bioOil) totalInvestment += inputs.bioOilInvestment;
-    const guidanceValue = totalInvestment * 0.025;
+    const guidanceValue = inputs.initialInvestment * 0.025;
     setInputs(prev => ({ ...prev, maintenanceCost: guidanceValue }));
-  }, [products.heat, products.electricity, products.bioOil, inputs.initialInvestment, inputs.electricityInvestment, inputs.bioOilInvestment]);
+  }, [inputs.initialInvestment]);
 
   const getProductIcon = (product) => {
     switch (product) {
@@ -638,9 +628,6 @@ const PyrolysisCalculator = () => {
         
         // Investitionen
         total_investment: formatNumber(inputs.initialInvestment),
-        electricity_investment: formatNumber(inputs.electricityInvestment),
-        bio_oil_investment: formatNumber(inputs.bioOilInvestment),
-        heat_investment: formatNumber(inputs.heatInvestment),
         
         // Produkte aktiviert
         heat_enabled: products.heat ? 'Ja' : 'Nein',
@@ -1607,10 +1594,7 @@ const PyrolysisCalculator = () => {
                   </div>
                   <input id="maintenance-cost" name="maintenanceCost" type="range" min="5000" max="500999" step="500" value={inputs.maintenanceCost} onChange={(e) => handleInputChange('maintenanceCost', e.target.value)} className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-orange-500" />
                   {(() => {
-                    let totalInvestment = inputs.initialInvestment;
-                    if (products.electricity) totalInvestment += inputs.electricityInvestment;
-                    if (products.bioOil) totalInvestment += inputs.bioOilInvestment;
-                    const guidanceValue = totalInvestment * 0.025;
+                    const guidanceValue = inputs.initialInvestment * 0.025;
                     return (
                       <p className="mt-2 text-xs text-gray-400">
                         {language === 'de' ? 'Orientierungswert (2,5% der Gesamtinvestition): ' : 'Guidance value (2.5% of total investment): '}
@@ -2003,12 +1987,6 @@ const PyrolysisCalculator = () => {
                               <input id="bio-oil-price" name="bioOilPrice" type="range" min="100" max="1000" step="10" value={inputs.bioOilPrice} onChange={(e) => handleInputChange('bioOilPrice', e.target.value)} className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-purple-500" />
                             </div>
                             <div>
-                              <label htmlFor="bio-oil-investment" className="block text-sm font-medium text-purple-300 mb-1">
-                                {t.additionalInvestment}: <span className="font-bold text-white">{formatNumber(inputs.bioOilInvestment)} €</span>
-                              </label>
-                              <input id="bio-oil-investment" name="bioOilInvestment" type="range" min="20000" max="2000000" step="5000" value={inputs.bioOilInvestment} onChange={(e) => handleInputChange('bioOilInvestment', e.target.value)} className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-purple-500" />
-                            </div>
-                            <div>
                               <label htmlFor="bio-oil-heating-value" className="block text-sm font-medium text-purple-300 mb-1">
                                 {t.bioOilHeatingValue}: <span className="font-bold text-white">{inputs.bioOilHeatingValue} MJ/kg</span>
                               </label>
@@ -2114,12 +2092,6 @@ const PyrolysisCalculator = () => {
                             {t.electricityPrice}: <span className="font-bold text-white">{inputs.electricityPrice.toFixed(2)} €/kWh</span>
                           </label>
                           <input id="electricity-price" name="electricityPrice" type="range" min="0.05" max="0.5" step="0.01" value={inputs.electricityPrice} onChange={(e) => handleInputChange('electricityPrice', e.target.value)} className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-yellow-500" />
-                        </div>
-                        <div>
-                          <label htmlFor="electricity-investment" className="block text-sm font-medium text-yellow-300 mb-1">
-                            {t.additionalInvestment}: <span className="font-bold text-white">{formatNumber(inputs.electricityInvestment)} €</span>
-                          </label>
-                          <input id="electricity-investment" name="electricityInvestment" type="range" min="20000" max="1000000" step="10000" value={inputs.electricityInvestment} onChange={(e) => handleInputChange('electricityInvestment', e.target.value)} className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-yellow-500" />
                         </div>
                         <div className="p-2 bg-yellow-900/20 rounded border border-yellow-500/30 text-sm space-y-1">
                           <div>
@@ -2709,9 +2681,6 @@ const PyrolysisCalculator = () => {
               {(() => {
                 const annualFeedstockCost = (inputs.plantCapacity * inputs.operatingHours / 1000) * inputs.feedstockCost;
                 const laborCost = inputs.laborCost;
-                const totalInvestment = inputs.initialInvestment + 
-                  (products.electricity ? inputs.electricityInvestment : 0) + 
-                  (products.bioOil ? inputs.bioOilInvestment : 0);
                 const maintenanceCost = inputs.maintenanceCost;
                 const grossElectricityConsumption = inputs.electricalPower * inputs.operatingHours;
                 const elecProd = elecProductionKWh;
